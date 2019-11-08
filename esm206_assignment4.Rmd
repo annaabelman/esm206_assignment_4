@@ -1,0 +1,51 @@
+---
+title: "ESM206 Assignment 4"
+author: "Anna Abelman and Emma Friedl"
+date: "11/7/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Attaching Packages
+library(tidyverse)
+library(janitor)
+library(here)
+
+# Read in data
+lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv")) %>% 
+  clean_names()
+```
+
+
+# Introduction:
+
+# Data Methods
+
+# Results:
+
+## A.
+
+## B.
+
+## C.
+
+
+# Summary:
+
+
+# References:
+
+
+
+
+
+
+
+
+
+
+
