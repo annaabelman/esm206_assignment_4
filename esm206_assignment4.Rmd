@@ -16,8 +16,13 @@ library(janitor)
 library(here)
 
 # Read in data
-lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv")) %>% 
+lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv"),
+                    na = "-99999") %>% 
   clean_names()
+```
+```{r}
+lobster_tidy <- lobster %>% 
+  uncount(count)
 ```
 
 
@@ -28,6 +33,11 @@ lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv")) %>%
 # Results:
 
 ## A.
+
+Naples and IV are MPA
+```{r}
+
+```
 
 ## B.
 
