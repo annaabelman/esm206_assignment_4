@@ -20,6 +20,7 @@ lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv"),
                     na = "-99999") %>% 
   clean_names()
 ```
+
 ```{r}
 lobster_tidy <- lobster %>% 
   uncount(count)
@@ -46,23 +47,30 @@ ggplot(data = lobster_site, aes(x = year, y = n))+
 
 ## B.
 ```{r}
+lobster_size <- lobster_tidy %>%
+  select(year, site, size_mm) %>% 
+  filter(year == c("2012","2018"))
+
+lobster_size$year <- as.factor(lobster_size$year)
+
+site_list <- unique(lobster_size$site)
+
+for (i in site_list) {
+  graph <- ggplot(subset(lobster_size,
+                         lobster_size$site == i), 
+                  aes(x = site, y = size_mm, fill = year)) +
+  geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)
+    print(graph)
+}
+  
+```
+
+```{r}
 lobster_size_2012 <- lobster_tidy %>% 
   filter(year == "2012")
 
 lobster_size_2018 <- lobster_tidy %>% 
   filter(year == "2018")
-
-
-lobster_size <- lobster_tidy %>%
-  select(year, site, size_mm) %>% 
-  filter(year == c("2012","2018")) %>% 
-  mutate(site = fct_reorder(site, size_mm))
-
-ggplot(lobster_size, aes(color = year, x = site , y = size_mm))+
-  geom_violin(position = "dodge")
-
-
-
 
 ggplot()+
   geom_violin(data = lobster_size_2012, position = "dodge",
@@ -70,9 +78,8 @@ ggplot()+
   geom_violin(data = lobster_size_2018,position = "dodge",
               aes(x = site, y = size_mm, fill = year))+
   facet_wrap(vars(site))
-
-  
 ```
+
 
 ## C.
 ```{r}
