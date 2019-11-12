@@ -83,16 +83,12 @@ ggplot()+
 
 ## C.
 ```{r}
-#mpa <- lobster_tidy %>% 
- # if(site == "IVEE"|site == "NAPL") {
- # mutate(status = MPA)
-  #} else {
-   # mutate(status = Non-MPA)
-  #}
+sites = lobster_tidy$site
+mpa_sites <- ifelse(sites == "IVEE" | sites == "NAPL", 
+                    "MPA", "Non_MPA")
 
-
-#lobster_mean_size <- lobster_tidy %>% 
-  
+lobster_mean_size <- lobster_tidy %>% 
+  mutate(protected_status = mpa_sites)
   #filter(year == c("2012","2018"))%>% 
  # group_by(year) %>% 
  # group_by(site) %>% 

@@ -459,16 +459,12 @@ ggplot()+
 </div>
 <div id="c." class="section level2">
 <h2>C.</h2>
-<pre class="r"><code>#mpa &lt;- lobster_tidy %&gt;% 
- # if(site == &quot;IVEE&quot;|site == &quot;NAPL&quot;) {
- # mutate(status = MPA)
-  #} else {
-   # mutate(status = Non-MPA)
-  #}
+<pre class="r"><code>sites = lobster_tidy$site
+mpa_sites &lt;- ifelse(sites == &quot;IVEE&quot; | sites == &quot;NAPL&quot;, 
+                    &quot;MPA&quot;, &quot;Non_MPA&quot;)
 
-
-#lobster_mean_size &lt;- lobster_tidy %&gt;% 
-  
+lobster_mean_size &lt;- lobster_tidy %&gt;% 
+  mutate(protected_status = mpa_sites)
   #filter(year == c(&quot;2012&quot;,&quot;2018&quot;))%&gt;% 
  # group_by(year) %&gt;% 
  # group_by(site) %&gt;% 
