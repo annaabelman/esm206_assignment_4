@@ -38,10 +38,10 @@ lobster_tidy <- lobster %>%
 Naples and IV are MPA
 ```{r}
 lobster_site <- lobster_tidy %>% 
-  group_by(year)%>% 
+  group_by(year) %>% 
   count(site)
 
-ggplot(data = lobster_site, aes(x = year, y = n))+
+ggplot(data = lobster_site, aes(x = year, y = n)) +
   geom_line(aes(color = site))
 ```
 
@@ -72,27 +72,36 @@ lobster_size_2012 <- lobster_tidy %>%
 lobster_size_2018 <- lobster_tidy %>% 
   filter(year == "2018")
 
-ggplot()+
+ggplot() +
   geom_violin(data = lobster_size_2012, position = "dodge",
-              aes(x = site, y = size_mm, ))+
+              aes(x = site, y = size_mm, )) +
   geom_violin(data = lobster_size_2018,position = "dodge",
-              aes(x = site, y = size_mm, fill = year))+
+              aes(x = site, y = size_mm, fill = year)) +
   facet_wrap(vars(site))
 ```
 
 
 ## C.
 ```{r}
+
+#create a vector containing either "MPA" or "Non_MPA"
+#corresponsing to the site
 sites = lobster_tidy$site
 mpa_sites <- ifelse(sites == "IVEE" | sites == "NAPL", 
                     "MPA", "Non_MPA")
 
 lobster_mean_size <- lobster_tidy %>% 
-  mutate(protected_status = mpa_sites)
-  #filter(year == c("2012","2018"))%>% 
- # group_by(year) %>% 
- # group_by(site) %>% 
- # mutate(mean_size = mean(size_mm)) 
+  mutate(protected_status = mpa_sites) %>% 
+  select(year, size_mm, protected_status) %>% 
+  filter(year == c("2012","2018")) %>% 
+  group_by(protected_status, year) %>% 
+  mutate(mean_size = mean(size_mm)) 
+
+lobster_mean_size$year <- as.factor(lobster_mean_size$year)
+
+ggplot(lobster_mean_size, 
+       aes(fill = protected_status, x = year, y = mean_size)) +
+  geom_col(position="dodge")
 
 ```
 
