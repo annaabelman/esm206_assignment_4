@@ -36,12 +36,62 @@ lobster_tidy <- lobster %>%
 
 Naples and IV are MPA
 ```{r}
+lobster_site <- lobster_tidy %>% 
+  group_by(year)%>% 
+  count(site)
 
+ggplot(data = lobster_site, aes(x = year, y = n))+
+  geom_line(aes(color = site))
 ```
 
 ## B.
+```{r}
+lobster_size_2012 <- lobster_tidy %>% 
+  filter(year == "2012")
+
+lobster_size_2018 <- lobster_tidy %>% 
+  filter(year == "2018")
+
+
+lobster_size <- lobster_tidy %>%
+  select(year, site, size_mm) %>% 
+  filter(year == c("2012","2018")) %>% 
+  mutate(site = fct_reorder(site, size_mm))
+
+ggplot(lobster_size, aes(color = year, x = site , y = size_mm))+
+  geom_violin(position = "dodge")
+
+
+
+
+ggplot()+
+  geom_violin(data = lobster_size_2012, position = "dodge",
+              aes(x = site, y = size_mm, ))+
+  geom_violin(data = lobster_size_2018,position = "dodge",
+              aes(x = site, y = size_mm, fill = year))+
+  facet_wrap(vars(site))
+
+  
+```
 
 ## C.
+```{r}
+#mpa <- lobster_tidy %>% 
+ # if(site == "IVEE"|site == "NAPL") {
+ # mutate(status = MPA)
+  #} else {
+   # mutate(status = Non-MPA)
+  #}
+
+
+#lobster_mean_size <- lobster_tidy %>% 
+  
+  #filter(year == c("2012","2018"))%>% 
+ # group_by(year) %>% 
+ # group_by(site) %>% 
+ # mutate(mean_size = mean(size_mm)) 
+
+```
 
 
 # Summary:
