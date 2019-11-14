@@ -97,7 +97,7 @@ mpa_sites <- ifelse(sites == "IVEE" | sites == "NAPL",
 
 lobster_mean_size <- lobster_tidy %>% 
   mutate(protected_status = mpa_sites)
-  #filter(year == c("2012","2018"))%>% 
+  filter(year == c("2012","2018"))%>% 
  # group_by(year) %>% 
  # group_by(site) %>% 
  # mutate(mean_size = mean(size_mm)) 
