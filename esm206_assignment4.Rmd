@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(janitor)
 library(here)
+library(DT)
 
 # Read in data
 lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv"),
@@ -63,13 +64,20 @@ lobster_size$year <- as.factor(lobster_size$year)
 
 site_list <- unique(lobster_size$site)
 
-for (i in site_list) {
-  graph <- ggplot(subset(lobster_size,
-                         lobster_size$site == i), 
-                  aes(x = site, y = size_mm, fill = year)) +
-  geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)
-    print(graph)
-}
+#for (i in site_list) {
+  #graph <- ggplot(subset(lobster_size,
+   #                      lobster_size$site == i), 
+    #              aes(x = sites, y = size_mm, fill = year)) +
+ # geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)+
+  #  facet_wrap(sites)
+   # print(graph)
+#}
+
+ graph <- ggplot(lobster_size, aes(x = site, y = size_mm, fill = year)) +
+  geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)+
+    facet_wrap(~site, scales = "free")
+
+graph
   
 ```
 
@@ -91,16 +99,24 @@ ggplot()+
 
 ## C.
 ```{r}
+#create a vector containing either "MPA" or "Non_MPA"
+#corresponsing to the site
 sites = lobster_tidy$site
 mpa_sites <- ifelse(sites == "IVEE" | sites == "NAPL", 
                     "MPA", "Non_MPA")
 
 lobster_mean_size <- lobster_tidy %>% 
-  mutate(protected_status = mpa_sites)
-  filter(year == c("2012","2018"))%>% 
- # group_by(year) %>% 
- # group_by(site) %>% 
- # mutate(mean_size = mean(size_mm)) 
+  mutate(protected_status = mpa_sites) %>% 
+  select(year, size_mm, protected_status) %>% 
+  filter(year == c("2012","2018")) %>% 
+  group_by(protected_status, year) %>% 
+  mutate(mean_size = mean(size_mm)) 
+
+lobster_mean_size$year <- as.factor(lobster_mean_size$year)
+
+ggplot(lobster_mean_size, 
+       aes(fill = protected_status, x = year, y = mean_size)) +
+  geom_col(position="dodge")
 
 ```
 
