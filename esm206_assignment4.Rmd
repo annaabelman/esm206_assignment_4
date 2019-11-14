@@ -110,13 +110,49 @@ lobster_mean_size <- lobster_tidy %>%
   select(year, size_mm, protected_status) %>% 
   filter(year == c("2012","2018")) %>% 
   group_by(protected_status, year) %>% 
-  mutate(mean_size = mean(size_mm)) 
+  mutate(mean_size = mean(size_mm, na.rm = TRUE)) 
 
 lobster_mean_size$year <- as.factor(lobster_mean_size$year)
 
 ggplot(lobster_mean_size, 
        aes(fill = protected_status, x = year, y = mean_size)) +
   geom_col(position="dodge")
+
+```
+```{r}
+#mean statistics
+lobster_table <- lobster_tidy %>% 
+  mutate(protected_status = mpa_sites) %>%
+  filter(year == c("2012","2018")) %>% 
+  group_by(protected_status, year) %>% 
+  summarize(
+    mean = mean(size_mm, na.rm = TRUE),
+    sd = sd(size_mm, na.rm = TRUE),
+    lobster_n = n()
+  )
+
+datatable(lobster_table)
+#2012 mpa vs non mpa - ttest
+#lobster_2012_mpa <- lobster_mean_size %>% 
+ # filter(year == "2012", protected_status == "MPA") %>% 
+  #pull(size_mm)
+
+#lobster_2012_non <- lobster_mean_size %>% 
+#  filter(year == "2012", protected_status == "Non-MPA") %>% 
+ # pull(size_mm)
+
+#mpa_vs_non_2012 <- t.test(lobster_2012_mpa, lobster_2012_non)
+
+#2018 mpa vs non - ttest
+#lobster_2018_mpa <- lobster_mean_size %>% 
+#  filter(year == "2018", protected_status == "MPA") %>% 
+#  pull(size_mm, na.rm = TRUE)
+
+#lobster_2018_non <- lobster_mean_size %>% 
+ # filter(year == "2018", protected_status == "Non-MPA") %>% 
+ # pull(size_mm, na.rm = TRUE)
+
+#mpa_vs_non_2018 <- t.test(lobster_2018_mpa, lobster_2018_non)
 
 ```
 
