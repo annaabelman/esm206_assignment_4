@@ -64,7 +64,7 @@ lobster_size <- lobster_tidy %>%
 
 lobster_size$year <- as.factor(lobster_size$year)
 
- graph <- ggplot(lobster_size, aes(x = site, y = size_mm, fill = year)) +
+ graph <- ggplot(lobster_size, aes(x = year, y = size_mm, fill = year)) +
   geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)+
     facet_wrap(~site, scales = "free")
 
@@ -104,7 +104,7 @@ lobster_table <- lobster_tidy %>%
   filter(year == c("2012","2018")) %>% 
   group_by(protected_status, year) %>% 
   summarize(
-    mean = mean(size_mm, na.rm = TRUE),
+    mean = mean(size_mm, na.rm = TRUE) %>% round(3),
     sd = sd(size_mm, na.rm = TRUE),
     count = n()
   )
