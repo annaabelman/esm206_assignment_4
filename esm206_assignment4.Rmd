@@ -104,8 +104,8 @@ lobster_table <- lobster_tidy %>%
   filter(year == c("2012","2018")) %>% 
   group_by(protected_status, year) %>% 
   summarize(
-    mean = mean(size_mm, na.rm = TRUE) %>% round(3),
-    sd = sd(size_mm, na.rm = TRUE),
+    mean = mean(size_mm, na.rm = TRUE) %>% round(2),
+    sd = sd(size_mm, na.rm = TRUE) %>% round(2),
     count = n()
   )
 
