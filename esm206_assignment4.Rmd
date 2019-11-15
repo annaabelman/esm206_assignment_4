@@ -6,15 +6,17 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r}
+```{r, message=FALSE}
 #Attaching Packages
 library(tidyverse)
 library(janitor)
 library(here)
 library(DT)
+library(knitr)
+library(kableExtra)
 
 # Read in data
 lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv"),
@@ -36,16 +38,16 @@ lobster_tidy <- lobster %>%
 
 ## A.
 
-Naples and IV are MPA
+Naples and IV are MPA. They were established in 2012
 ```{r}
 lobster_site <- lobster_tidy %>% 
   group_by(year)%>% 
   count(site) %>% 
   mutate(highlight = ifelse(site == "IVEE" | site == "NAPL", "MPA", "Non-MPA"))
 
-  ggplot(data = lobster_site, aes(x = year, y = n, group = site, color = highlight))+
+  ggplot(data = lobster_site, aes(x = year, y = n, group = site, color = highlight)) +
   geom_line()+
-    scale_color_manual(values = c("blue", "green"))+
+    scale_color_manual(values = c("firebrick3", "dimgray"))+
     scale_size_manual(values = c(1.5,2))+
     theme(legend.position = "none")+
   theme_minimal()+
@@ -62,38 +64,12 @@ lobster_size <- lobster_tidy %>%
 
 lobster_size$year <- as.factor(lobster_size$year)
 
-site_list <- unique(lobster_size$site)
-
-#for (i in site_list) {
-  #graph <- ggplot(subset(lobster_size,
-   #                      lobster_size$site == i), 
-    #              aes(x = sites, y = size_mm, fill = year)) +
- # geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)+
-  #  facet_wrap(sites)
-   # print(graph)
-#}
-
  graph <- ggplot(lobster_size, aes(x = site, y = size_mm, fill = year)) +
   geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE)+
     facet_wrap(~site, scales = "free")
 
 graph
   
-```
-
-```{r}
-lobster_size_2012 <- lobster_tidy %>% 
-  filter(year == "2012")
-
-lobster_size_2018 <- lobster_tidy %>% 
-  filter(year == "2018")
-
-ggplot()+
-  geom_violin(data = lobster_size_2012, position = "dodge",
-              aes(x = site, y = size_mm, ))+
-  geom_violin(data = lobster_size_2018,position = "dodge",
-              aes(x = site, y = size_mm, fill = year))+
-  facet_wrap(vars(site))
 ```
 
 
@@ -130,10 +106,15 @@ lobster_table <- lobster_tidy %>%
   summarize(
     mean = mean(size_mm, na.rm = TRUE),
     sd = sd(size_mm, na.rm = TRUE),
-    lobster_n = n()
+    count = n()
   )
 
-datatable(lobster_table)
+kable(lobster_table, col.names = c("Protected Status", "Year", "Mean (mm)", "Standard Deviation (mm)", "Count")) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F,
+                position = "left")
+  #add_header_above(c("Summary Stats" = 3))
+  
 
 #2012 mpa vs non mpa - ttest
 lobster_2012_mpa <- lobster_mean_size %>% 
@@ -165,12 +146,17 @@ non_12_vs_18 <- t.test(lobster_2012_non, lobster_2018_non)
 
 ```
 
+In 2012, mean lobster sizes at MPA sites were `r ` % higher than at Non MPA sites (XXXX at MPA, and XXX at Non MPA) 
 
+Mean sizes at MPA (mean +/- Standard Deviation, n = XXX), differed significantly from mean sizes at Non MPA(stats) by a paired two-sample t test(stats)
+
+following dragon reintroduction (Figure 4), compared to those recorded for griffins in the pre-dragon (1984 - 2004) period, and the decrease was statistically significant (one-sample t-test, t(312.2) = 3.8, p = 0.014). Our results reinforce findings from an earlier study by Dumbledore et al. (2013), which reported decreased daily distance traveled and less variation in distance traveled for griffins in the presence of dragons.
 # Summary:
 
 
 # References:
 
+Reed D. 2019. SBC LTER: Reef: Abundance, size and fishing effort for California Spiny Lobster (Panulirus interruptus), ongoing since 2012. Environmental Data Initiative. https://doi.org/10.6073/pasta/a593a675d644fdefb736750b291579a0. Dataset accessed 11/09/2019.
 
 
 
