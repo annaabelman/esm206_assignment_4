@@ -46,15 +46,58 @@ lobster_site <- lobster_tidy %>%
   mutate(highlight = ifelse(site == "IVEE" | site == "NAPL", "MPA", "Non-MPA"))
 
   ggplot(data = lobster_site, aes(x = year, y = n, group = site, color = highlight)) +
-  geom_line()+
+  geom_line(aes(color = highlight,
+                linetype = highlight,
+                size = highlight),
+            show.legend = FALSE)+
     scale_color_manual(values = c("firebrick3", "dimgray"))+
-    scale_size_manual(values = c(1.5,2))+
-    theme(legend.position = "none")+
+    scale_size_manual(values = c(1.5,1))+
+    scale_linetype_manual(values = c("solid", "dotted"))+
   theme_minimal()+
-  labs(x = "Year", y = "Number of Lobsters", title = "Number of Lobsters Per Site, 2012-2018")+
-    scale_x_continuous(expand = c(0,0))
+    theme(plot.title = element_text(hjust = 0.5))+
+  labs(x = "Year",
+       y = "Number of Lobsters",
+       title = "Population Size of Lobsters at Each Site, 2012-2018")+
+    scale_x_continuous(expand = c(0,0))+
+    annotate(geom = "text",
+           x = 2017.2,
+           y = 800,
+           size = 2.7,
+           label = "Isla Vista",
+           color = "firebrick3", 
+           fontface = 2)+
+      annotate(geom = "text",
+           x = 2017.65,
+           y = 605,
+           size = 2.7,
+           label = "Carpinteria",
+           color = "dimgrey", 
+           fontface = 2)+
+    annotate(geom = "text",
+           x = 2017.7,
+           y = 300,
+           size = 2.7,
+           label = "Naples",
+           color = "firebrick3", 
+           fontface = 2)+
+     annotate(geom = "text",
+           x = 2016.85,
+           y = 230,
+           size = 2.7,
+           label = "Mohawk",
+           color = "dimgrey", 
+           fontface = 2)+
+    annotate(geom = "text",
+           x = 2017.5,
+           y = 90,
+           size = 2.7,
+           label = "Arroyo Quemado",
+           color = "dimgrey", 
+           fontface = 2)
+    
   
 ```
+**Figure 1**: Change in Lobster abundance from 2012-2018 for all five sites: Isla Vista, Carpinteria, Mohawk, Naples, and Arroyo Quemado. MPA sites (red, solid lines) slightly increased in lobster population size, while Non-MPA sites' (gray, dotted line) lobster population size varied based on site. Data from SBC LTER.
 
 ## B.
 ```{r}
