@@ -16,6 +16,7 @@ library(janitor)
 library(here)
 library(knitr)
 library(kableExtra)
+library(effsize)
 
 # Read in data
 lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv"),
@@ -34,17 +35,20 @@ lobster_tidy <- lobster %>%
 Naples and IV are Marine Protected Areas (MPA). They were established in 2012
 
 # Data Methods
+The data for the California Spiny Lobster abundance and the five sites along the mainland coast of Santa Barbara Channel from 2012-2018 were provided by the Santa Barbara Coastal Long-Term Ecological Research Program (SBC LTER). Two of the study sites collected data from the MPA sites, Isla Vista and Naples, while the other three were collected outside those areas in Arroyo Quemado, Mohawk and Carpinteria. Divers measured abundance (individuals) and size (mm) of the lobsters annually during the late summer at each site. Change in population size for each site from 2012-2018 were based on the number of lobsters found for each year. Lobster size distributions (mm) for years 2012 and 2018 were compared for MPA sites and Non-MPA sites. The mean lobster size for MPA vs. Non-MPA sites in 2012 and 2018 were analyzed by two-sample t-test (α = 0.05). The entire analysis was performed using R software 3.6.1. Additional information about data can be found by viewing “metadata”
 
 # Results
 
-## A. Lobster Counts by Site, 2012-2018
+### A. Lobster Counts by Site, 2012-2018
 
 ```{r}
+#create a dataframe that groups by the year and counts the number of lobsters at each site
 lobster_site <- lobster_tidy %>% 
  group_by(year) %>% 
  count(site) %>% 
-  mutate(highlight = ifelse(site == "IVEE" | site == "NAPL", "MPA", "Non-MPA"))
+  mutate(highlight = ifelse(site == "IVEE" | site == "NAPL", "MPA", "Non-MPA")) #add a column that specifies which are MPA and Non-MPA to highlight in graph below
 
+#create graph that shows all 5 sites but colors shows MPA vs Non-MPA
   ggplot(data = lobster_site, aes(x = year, y = n, group = site, color = highlight)) +
   geom_line(aes(color = highlight,
                 linetype = highlight,
@@ -97,9 +101,15 @@ lobster_site <- lobster_tidy %>%
            fontface = 2)
     
 ```
-**Figure 1**: Change in Lobster abundance from 2012-2018 for all five sites: Isla Vista, Carpinteria, Mohawk, Naples, and Arroyo Quemado. MPA sites (red, solid lines) slightly increased in lobster population size, while Non-MPA sites' (gray, dotted line) lobster population size varied based on site. Data from SBC LTER.
 
-## B. Lobster Size Distributions by Site and Year 
+**Figure 1.** Change in Lobster abundance from 2012-2018 for all five sites: Isla Vista, Carpinteria, Mohawk, Naples, and Arroyo Quemado. MPA sites (red, solid lines) slightly increased in lobster population size, while Non-MPA sites' (gray, dotted line) lobster population size varied based on site. Data from SBC LTER.
+
+From 2012 to 2018, the population size of lobsters in each of the sites varies, especially between MPA sites and Non-MPA sites. Naples and Isla Vista were established as MPA sites in 2012 and begin to increase slowly until 2015. At this time, it can be inferred that some environmental factor negatively impacted the lobster populations for all sites, except Carpinteria. Isla Vista’s lobster population increase dramatically in 2016 to over 800 lobsters by 2018. Naples’ population growth was delayed but began again in 2017 to reach approximately 275 lobsters by 2018. 
+
+The Non-MPA sites: Mohawk, Arroyo Quemado, and Carpinteria, all change in lobster abundance during this time period, but Carpinteria has the most interesting trend. Carpinteria is the only site that was not effected by the event in 2015 that decreased lobster populations at all the other sites. It continued to increase and have the greatest population size until 2017 when it declined rapidly to around 325 lobsters in 2018. Since Carpinteria is not an MPA site and the population of lobsters’ overall increases, it could question the effectiveness of the MPA sites. Mohawk and Arroyo Quemado are relatively constant throughout these years. 
+
+
+### B. Lobster Size Distributions by Site and Year 
 ```{r}
 #create data frame keeping only years 2012 and 2018
 lobster_size <- lobster_tidy %>%
@@ -139,6 +149,7 @@ levels(lobster_size_relevel$site2) <- c("Arroyo Quemado", "Carpinteria", "Mohawk
  
   
 ```
+
 **Figure 2.** California Spiny Lobster size distribution (mm) at 2 Marine Protected Sites (Isla Vista and Naples) and 3 outside sites (Arroyo Quemado, Mohawk and Carpinteria) at 2012 and 2018. Mean sizes of each sample are shown as a black star. Non-MPA sites do not show a consistent difference between years, while both MPA sites show an increase in larger lobster sizes from 2012 (orange-red) to 2018 (green). Data: Santa Barbara Coastal LTER.
 
 For Non-MPA sites, the changes in size distributions from 2012 to 2018 vary. At Arroyo Quemado in 2012, lobster sizes were concentrated at the low end around 65mm. In 2018, there were still a similar number of lobsters around 65mm, but also a comparable proportion at larger sizes from 70-80mm, signifying an overall increase in larger lobsters over the studied time period, despite an unchanged mean. Carpinteria’s lobster sizes were slightly more concentrated in 2018, but the largest proportion of lobster sizes remained around 70mm for each year, indicating little change in average lobster size. Finally, the Mohawk site had a more positively skewed distribution in 2012 but a more negatively skewed one in 2018. While the bulk of measurements lay around 75mm in both years, average lobster size decreased. Overall, there is no consistent pattern in size distributions over time between the Non-MPA sites.
@@ -146,7 +157,7 @@ For Non-MPA sites, the changes in size distributions from 2012 to 2018 vary. At 
 MPA sites, however, show a different story. In Isla Vista, most lobster sizes were concentrated around 60mm in 2012 and 85mm in 2018. The mean also increased significantly. At the Naples site in 2012, the largest proportion of lobster sizes was around 65mm, but in 2018 the highest concentration was in the 75-85mm range. The mean also increased here. While actual lobster sizes varied, the distributions indicate that there were higher concentrations of lobster sizes at higher values in 2018, indicating an overall increase in average lobster size at MPA designated sites. These findings suggest that the MPA designation had a positve effect on lobster size.
 
 
-## C. Comparing Mean Size Values by Protected Status and Year
+### C. Comparing Mean Size Values by Protected Status and Year
 ```{r}
 #create a vector containing either "MPA" or "Non_MPA"
 #corresponsing to the site
@@ -186,11 +197,12 @@ ggplot(lobster_mean_size,
   geom_text(aes(label = mean_size), position = position_dodge(width = 0.9), vjust = -0.25) +
   annotate("text", x = c(.77, 1.77), y = 3, label = "2012") + annotate("text", x = c(1.22, 2.22), y = 3, label = "2018")
 ```
-**Figure 3.** Mean lobster sizes (mm) grouped by MPA sites and non-MPA sites in 2012 (green) and 2018 (orange). From 2012-2018, ean lobster size increased at MPA sites and decreased at non-MPA sites.
+
+**Figure 3.** Mean lobster sizes (mm) grouped by MPA sites and non-MPA sites in 2012 (green) and 2018 (orange). From 2012-2018, the lobster size increased at MPA sites and decreased at non-MPA sites.
 
 At MPA sites, mean lobster sizes increased by `r mpa_pct <- ((77.57 - 67.38) / 67.38) * 100``r round(mpa_pct, 1)`% while mean lobster sizes decreased by `r nmpa_pct <- ((74.92 - 73.62) / 74.92) * 100``r round(nmpa_pct, 1)`% at non-MPA sites. We will explore these differences further with statistical tests to determine their significance.
 
-**Table 1.**
+**Table 1.**Statistical summary of the lobster sizes (mm) between MPA and Non-MPA sites in 2012-2018. 
 
 ```{r}
 #create a summary table with mean, sd, and count
@@ -205,12 +217,13 @@ lobster_table <- lobster_tidy %>%
   )
 
 #display a nice table of summary stats
-kable(lobster_table, col.names = c("Protected Status", "Year", "Mean (mm)", "Standard Deviation (mm)", "Count")) %>% 
-  kable_styling(bootstrap_options = "striped", 
+kable(lobster_table, col.names = c("Protected Status", "Year", "Mean (mm)", "Standard Deviation (mm)", "Sample Size")) %>% #begin to customize the graph
+  kable_styling(bootstrap_options = c("striped","hover","condensed","responsive"), 
                 full_width = F,
-                position = "left")
-#add title
-
+                position = "center",
+                font_size = 10) %>% 
+  column_spec(1, bold = T) %>% 
+  row_spec(0, bold = T)
 ```
 
 ```{r}
@@ -234,6 +247,8 @@ lobster_2018_mpa <- lobster_mean_size %>%
 lobster_2018_non <- lobster_mean_size %>% 
   filter(year == "2018", protected_status == "Non_MPA") %>%  pull(size_mm)
 
+# --------------------------------------------
+
 #2012 mpa vs non mpa - ttest:
 mpa_vs_non_2012 <- t.test(lobster_2012_mpa, lobster_2012_non)
 
@@ -245,6 +260,21 @@ mpa_12_vs_18 <- t.test(lobster_2012_mpa, lobster_2018_mpa)
 
 #Non_MPA 2012 vs 2018 - ttest
 non_12_vs_18 <- t.test(lobster_2012_non, lobster_2018_non)
+
+# -------------------------------------------
+#finding the cohen's d for each comparison
+
+#2012 mpa vs non-mpa cohen's d
+d_mpa_vs_non_2012 <- effsize::cohen.d(lobster_2012_mpa, lobster_2012_non, na.rm = TRUE)
+
+#2018 mpa vs non-mpa cohen's d
+d_mpa_vs_non_2018 <- effsize::cohen.d(lobster_2018_mpa, lobster_2018_non, na.rm = TRUE)
+
+#mpa 2012 vs 2018 cohen's d
+d_mpa_12_vs_18 <- effsize::cohen.d(lobster_2012_mpa, lobster_2018_mpa, na.rm = TRUE)
+
+#non-mpa 2012 vs 2018 cohen's d
+d_non_12_vs_18 <- effsize::cohen.d(lobster_2012_non, lobster_2018_non, na.rm = TRUE)
 
 ```
 
