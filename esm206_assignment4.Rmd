@@ -10,39 +10,39 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r, message=FALSE}
-#Attaching Packages
+#attach necessary packages
 library(tidyverse)
 library(janitor)
 library(here)
-library(DT)
 library(knitr)
 library(kableExtra)
 
 # Read in data
 lobster <- read_csv(here("raw_data", "lobster_abundance_sbc_lter.csv"),
-                    na = "-99999") %>% 
-  clean_names()
+                    na = "-99999")
 ```
 
 ```{r}
+#tidy up data
 lobster_tidy <- lobster %>% 
+  clean_names() %>% 
   uncount(count)
 ```
 
 
 # Introduction:
+Naples and IV are Marine Protected Areas (MPA). They were established in 2012
 
 # Data Methods
 
-# Results:
+# Results
 
-## A.
+## A. Lobster Counts by Site, 2012-2018
 
-Naples and IV are MPA. They were established in 2012
 ```{r}
 lobster_site <- lobster_tidy %>% 
-  group_by(year)%>% 
-  count(site) %>% 
+ group_by(year) %>% 
+ count(site) %>% 
   mutate(highlight = ifelse(site == "IVEE" | site == "NAPL", "MPA", "Non-MPA"))
 
   ggplot(data = lobster_site, aes(x = year, y = n, group = site, color = highlight)) +
@@ -101,32 +101,42 @@ lobster_site <- lobster_tidy %>%
 
 ## B. Lobster Size Distributions by Site and Year 
 ```{r}
+#create data frame keeping only years 2012 and 2018
 lobster_size <- lobster_tidy %>%
   select(year, site, size_mm) %>% 
   filter(year %in% c("2012","2018"))
 
-lobster_size$year <- as.factor(lobster_size$year)
+#make year variable a factor
+lobster_size$year <- as.factor(lobster_size$year) 
+  
+#relevel years
+  lobster_size_relevel <- lobster_size %>% 
+    mutate(year = fct_relevel(year, "2018", "2012"))
+  
+  #relevel sites to display in different order
+lobster_size_relevel$site2 <- factor(lobster_size_relevel$site, levels=c("AQUE", "CARP", "MOHK", "IVEE", "NAPL"))
 
-lobster_size$site[lobster_size$site == "AQUE"] <- "Arroyo Quemado"
-lobster_size$site[lobster_size$site == "CARP"] <- "Carpinteria"
-lobster_size$site[lobster_size$site == "IVEE"] <- "Isla Vista"
-lobster_size$site[lobster_size$site == "MOHK"] <- "Mohawk"
-lobster_size$site[lobster_size$site == "NAPL"] <- "Naples"
+#rename site2 so that full site names are displayed
+levels(lobster_size_relevel$site2) <- c("Arroyo Quemado", "Carpinteria", "Mohawk", "Isla Vista", "Naples")
 
 #make a faceted violin plot comparing 
 #all five sites by year
- ggplot(lobster_size, aes(x = year, y = size_mm, fill = year)) +
-   scale_fill_manual(values = c("#038c8c", "#f2955e")) +
+ ggplot(lobster_size_relevel, aes(x = year, y = size_mm, fill = year)) +
+  scale_fill_manual(values = c("#038c8c", "#f2955e")) +
   geom_violin(position = "dodge", show.legend = FALSE, trim = FALSE) +
+   #add means to the violin plots
    stat_summary(fun.y = mean, geom = "point", color = "black", shape = 8, size = 2, show.legend = FALSE) +
-  facet_wrap(~site, scales = "free") +
-   coord_flip() +
+   #facet by site and flip coordinates
+  facet_wrap(~site2, scales = "free") +
+   theme(strip.background = element_rect(color = "black", size = 1.5)) +
+  coord_flip() +
+   #clean up axes, add/remove labels
    scale_y_continuous(expand = c(0,0)) +
-   scale_x_discrete(limits = c(2018, 2012), labels = TRUE) +
    labs(y = "Mean Size (mm)",
         title = "California Spiny Lobster Size Distribution by Site, 2012 & 2018") +
    theme(plot.title = element_text(hjust = 0.5)) +
    theme(axis.title.y = element_blank())
+ 
   
 ```
 **Figure 2.** California Spiny Lobster size distribution (mm) at 2 Marine Protected Sites (Isla Vista and Naples) and 3 outside sites (Arroyo Quemado, Mohawk and Carpinteria) at 2012 and 2018. Mean sizes of each sample are shown as a black star. Non-MPA sites do not show a consistent difference between years, while both MPA sites show an increase in larger lobster sizes from 2012 (orange-red) to 2018 (green). Data: Santa Barbara Coastal LTER.
@@ -141,43 +151,52 @@ MPA sites, however, show a different story. In Isla Vista, most lobster sizes we
 #create a vector containing either "MPA" or "Non_MPA"
 #corresponsing to the site
 sites = lobster_tidy$site
-mpa_sites <- ifelse(sites == "IVEE" | sites == "NAPL", 
-                    "MPA", "Non_MPA")
+mpa_sites <- ifelse(sites == "IVEE" | sites == "NAPL", "MPA", "Non_MPA")
 
+#create new data frame that includes mean sizes
+#of MPA vs Non MPA and for each year
 lobster_mean_size <- lobster_tidy %>% 
   mutate(protected_status = mpa_sites) %>% 
   select(year, size_mm, protected_status) %>% 
-  filter(year == c("2012","2018")) %>% 
+  filter(year %in% c("2012","2018")) %>% 
   group_by(protected_status, year) %>% 
   mutate(mean_size = mean(size_mm, na.rm = TRUE) %>% round(2)) 
 
+#make year variable a factor
 lobster_mean_size$year <- as.factor(lobster_mean_size$year)
 
+```
+
+```{r}
+#create column graph comparing mean sizes of MPA
+#and non MPA by year
 ggplot(lobster_mean_size, 
        aes(fill = year, x = protected_status, y = mean_size)) +
-   theme(legend.position = "none") +
+  theme(legend.position = "none") +
   scale_fill_manual(values = c("#038c8c", "#f2955e")) +
   geom_col(position="dodge") +
+  #add/remove axis labels, clean up axes
   labs(y = "Mean Size (mm)",
-       title = "TITLE") +
+       title = "Mean Lobster Sizes at MPA vs Non-MPA sites, 2012 & 2018") +
    theme(axis.title.x = element_blank()) +
   scale_x_discrete(expand = c(0,0)) +
+  scale_y_continuous(limits = c(0,81)) +
+  #add labels of years and mean values
   geom_text(aes(label = mean_size), position = position_dodge(width = 0.9), vjust = -0.25) +
   geom_text(aes(label = mean_size), position = position_dodge(width = 0.9), vjust = -0.25) +
   annotate("text", x = c(.77, 1.77), y = 3, label = "2012") + annotate("text", x = c(1.22, 2.22), y = 3, label = "2018")
-
 ```
-**Figure 3** CAPTION
+**Figure 3.** Mean lobster sizes (mm) grouped by MPA sites and non-MPA sites in 2012 (green) and 2018 (orange). From 2012-2018, ean lobster size increased at MPA sites and decreased at non-MPA sites.
 
-Maybe some light analysis here... percentages?
+At MPA sites, mean lobster sizes increased by `r mpa_pct <- ((77.57 - 67.38) / 67.38) * 100``r round(mpa_pct, 1)`% while mean lobster sizes decreased by `r nmpa_pct <- ((74.92 - 73.62) / 74.92) * 100``r round(nmpa_pct, 1)`% at non-MPA sites. We will explore these differences further with statistical tests to determine their significance.
 
 **Table 1.**
 
 ```{r}
-#mean statistics
+#create a summary table with mean, sd, and count
 lobster_table <- lobster_tidy %>% 
   mutate(protected_status = mpa_sites) %>%
-  filter(year == c("2012","2018")) %>% 
+  filter(year %in% c("2012","2018")) %>% 
   group_by(protected_status, year) %>% 
   summarize(
     mean = mean(size_mm, na.rm = TRUE) %>% round(2),
@@ -185,33 +204,40 @@ lobster_table <- lobster_tidy %>%
     count = n()
   )
 
+#display a nice table of summary stats
 kable(lobster_table, col.names = c("Protected Status", "Year", "Mean (mm)", "Standard Deviation (mm)", "Count")) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = F,
                 position = "left")
 #add title
-  
 
-#2012 mpa vs non mpa - ttest
+```
+
+```{r}
+#create vector of 2012 MPA lobster sizes
 lobster_2012_mpa <- lobster_mean_size %>% 
  filter(year == "2012" & protected_status == "MPA") %>% 
   pull(size_mm)
 
+#create vector of 2012 non MPA lobster sizes
 lobster_2012_non <- lobster_mean_size %>% 
   filter(year == "2012" & 
            protected_status == "Non_MPA") %>% 
   pull(size_mm)
 
-mpa_vs_non_2012 <- t.test(lobster_2012_mpa, lobster_2012_non)
-
-#2018 mpa vs non - ttest
+#create vector of 2018 MPA lobster sizes
 lobster_2018_mpa <- lobster_mean_size %>% 
   filter(year == "2018" & protected_status == "MPA") %>% 
   pull(size_mm)
 
+#create vector of 2018 non MPA lobster sizes
 lobster_2018_non <- lobster_mean_size %>% 
   filter(year == "2018", protected_status == "Non_MPA") %>%  pull(size_mm)
 
+#2012 mpa vs non mpa - ttest:
+mpa_vs_non_2012 <- t.test(lobster_2012_mpa, lobster_2012_non)
+
+#2018 mpa vs non - ttest
 mpa_vs_non_2018 <- t.test(lobster_2018_mpa, lobster_2018_non)
 
 #MPA 2012 vs 2018 - ttest
@@ -221,6 +247,7 @@ mpa_12_vs_18 <- t.test(lobster_2012_mpa, lobster_2018_mpa)
 non_12_vs_18 <- t.test(lobster_2012_non, lobster_2018_non)
 
 ```
+
 Stat analysis
 
 In 2012, mean lobster sizes at MPA sites were `r ` % higher than at Non MPA sites (XXXX at MPA, and XXX at Non MPA) 
