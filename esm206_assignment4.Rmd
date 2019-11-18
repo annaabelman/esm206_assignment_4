@@ -34,7 +34,7 @@ lobster_tidy <- lobster %>%
 # Introduction:
 Naples and IV are Marine Protected Areas (MPA). They were established in 2012
 
-# Data Methods
+# Data and Methods
 The data for the California Spiny Lobster abundance and the five sites along the mainland coast of Santa Barbara Channel from 2012-2018 were provided by the Santa Barbara Coastal Long-Term Ecological Research Program (SBC LTER). Two of the study sites collected data from the MPA sites, Isla Vista and Naples, while the other three were collected outside those areas in Arroyo Quemado, Mohawk and Carpinteria. Divers measured abundance (individuals) and size (mm) of the lobsters annually during the late summer at each site. Change in population size for each site from 2012-2018 were based on the number of lobsters found for each year. Lobster size distributions (mm) for years 2012 and 2018 were compared for MPA sites and Non-MPA sites. The mean lobster size for MPA vs. Non-MPA sites in 2012 and 2018 were analyzed by two-sample t-test (α = 0.05). The entire analysis was performed using R software 3.6.1. Additional information about data can be found by viewing “metadata”
 
 # Results
@@ -200,9 +200,55 @@ ggplot(lobster_mean_size,
 
 **Figure 3.** Mean lobster sizes (mm) grouped by MPA sites and non-MPA sites in 2012 (green) and 2018 (orange). From 2012-2018, the lobster size increased at MPA sites and decreased at non-MPA sites.
 
-At MPA sites, mean lobster sizes increased by `r mpa_pct <- ((77.57 - 67.38) / 67.38) * 100``r round(mpa_pct, 1)`% while mean lobster sizes decreased by `r nmpa_pct <- ((74.92 - 73.62) / 74.92) * 100``r round(nmpa_pct, 1)`% at non-MPA sites. We will explore these differences further with statistical tests to determine their significance.
 
-**Table 1.**Statistical summary of the lobster sizes (mm) between MPA and Non-MPA sites in 2012-2018. 
+```{r}
+#create vector of 2012 MPA lobster sizes
+lobster_2012_mpa <- lobster_mean_size %>% 
+ filter(year == "2012" & protected_status == "MPA") %>% 
+  pull(size_mm)
+
+#create vector of 2012 non MPA lobster sizes
+lobster_2012_non <- lobster_mean_size %>% 
+  filter(year == "2012" & 
+           protected_status == "Non_MPA") %>% 
+  pull(size_mm)
+
+#create vector of 2018 MPA lobster sizes
+lobster_2018_mpa <- lobster_mean_size %>% 
+  filter(year == "2018" & protected_status == "MPA") %>% 
+  pull(size_mm)
+
+#create vector of 2018 non MPA lobster sizes
+lobster_2018_non <- lobster_mean_size %>% 
+  filter(year == "2018", protected_status == "Non_MPA") %>%  pull(size_mm)
+```
+
+```{r}
+mean_MPA_2012 <- mean(lobster_2012_mpa)
+mean_MPA_2018 <- mean(lobster_2018_mpa)
+mean_nMPA_2012 <- mean(lobster_2012_non)
+mean_nMPA_2018 <- mean(lobster_2018_non)
+
+sd_MPA_2012 <- sd(lobster_2012_mpa)
+sd_MPA_2018 <- sd(lobster_2018_mpa)
+sd_nMPA_2012 <- sd(lobster_2012_non)
+sd_nMPA_2018 <- sd(lobster_2018_non)
+
+n_MPA_2012 <- length(lobster_2012_mpa)
+n_MPA_2018 <- length(lobster_2018_mpa)
+n_nMPA_2012 <- length(lobster_2012_non)
+n_nMPA_2018 <- length(lobster_2018_non)
+
+```
+
+
+
+
+At MPA sites, mean lobster sizes increased by `r mpa_pct <- ((mean_MPA_2018 - mean_MPA_2012) / mean_MPA_2012) * 100``r round(mpa_pct, 1)`% while mean lobster sizes decreased by `r nmpa_pct <- ((mean_nMPA_2012 - mean_nMPA_2018) / mean_nMPA_2012) * 100``r round(nmpa_pct, 1)`% at non-MPA sites. We will explore these differences further with statistical tests to determine their significance.
+
+
+
+**Table 1.**Statistical summary (mean, standard deviation, and sample size) of the lobster sizes (mm) between MPA and Non-MPA sites in 2012-2018. 
 
 ```{r}
 #create a summary table with mean, sd, and count
@@ -226,29 +272,8 @@ kable(lobster_table, col.names = c("Protected Status", "Year", "Mean (mm)", "Sta
   row_spec(0, bold = T)
 ```
 
+
 ```{r}
-#create vector of 2012 MPA lobster sizes
-lobster_2012_mpa <- lobster_mean_size %>% 
- filter(year == "2012" & protected_status == "MPA") %>% 
-  pull(size_mm)
-
-#create vector of 2012 non MPA lobster sizes
-lobster_2012_non <- lobster_mean_size %>% 
-  filter(year == "2012" & 
-           protected_status == "Non_MPA") %>% 
-  pull(size_mm)
-
-#create vector of 2018 MPA lobster sizes
-lobster_2018_mpa <- lobster_mean_size %>% 
-  filter(year == "2018" & protected_status == "MPA") %>% 
-  pull(size_mm)
-
-#create vector of 2018 non MPA lobster sizes
-lobster_2018_non <- lobster_mean_size %>% 
-  filter(year == "2018", protected_status == "Non_MPA") %>%  pull(size_mm)
-
-# --------------------------------------------
-
 #2012 mpa vs non mpa - ttest:
 mpa_vs_non_2012 <- t.test(lobster_2012_mpa, lobster_2012_non)
 
@@ -278,13 +303,18 @@ d_non_12_vs_18 <- effsize::cohen.d(lobster_2012_non, lobster_2018_non, na.rm = T
 
 ```
 
-Stat analysis
 
-In 2012, mean lobster sizes at MPA sites were `r ` % higher than at Non MPA sites (XXXX at MPA, and XXX at Non MPA) 
+**i.** In 2012, mean lobster sizes (mm) at MPA sites (`r round(mean_MPA_2012, 2)` $\pm$ `r round(sd_MPA_2012, 2)`, n = `r n_MPA_2012`) differed significantly from non-MPA sites (`r round(mean_nMPA_2012, 2)` $\pm$ `r round(sd_nMPA_2012, 2)`, n = `r n_nMPA_2012`) by a paired two-sample t-test (t(`r round(mpa_vs_non_2012$parameter, 2)`) = `r round(mpa_vs_non_2012$statistic, 2)`, *p* < 0.005). The Cohen's d calculation (d = `r round(d_mpa_vs_non_2012$estimate, 2)`, *d* ~ 0.5) shows a moderate effect size.
 
-Mean sizes at MPA (mean +/- Standard Deviation, n = XXX), differed significantly from mean sizes at Non MPA(stats) by a paired two-sample t test(stats)
 
-In analysis, talk about what cohen's d means for validity 
+**ii.** In 2018, mean lobster sizes (mm) at MPA sites (`r round(mean_MPA_2018, 2)` $\pm$ `r round(sd_MPA_2018, 2)`, n = `r n_MPA_2018`) differed significantly from non-MPA sites (`r round(mean_nMPA_2018, 2)` $\pm$ `r round(sd_nMPA_2018, 2)`, n = `r n_nMPA_2018`) by a paired two-sample t-test (t(`r round(mpa_vs_non_2018$parameter, 2)`) = `r round(mpa_vs_non_2018$statistic, 2)`, *p* < 0.005). The Cohen's d calculation (d = `r round(d_mpa_vs_non_2018$estimate, 2)`, *d* ~ 0.5) shows a small to moderate effect size.
+
+
+**iii.** Mean lobster sizes (mm) at MPA sites in 2012 (`r round(mean_MPA_2012, 2)` $\pm$ `r round(sd_MPA_2012, 2)`, n = `r n_MPA_2012`) differed significantly from MPA sites in 2018 (`r round(mean_MPA_2018, 2)` $\pm$ `r round(sd_MPA_2018, 2)`, n = `r n_MPA_2018`) by a paired two-sample t-test (t(`r round(mpa_12_vs_18$parameter, 2)`) = `r round(mpa_12_vs_18$statistic, 2)`, *p* < 0.005). Despite finding a significant p-value, the Cohen's d calculation (d = `r round(d_mpa_12_vs_18$estimate, 2)`, *d* > 0.8) shows a large effect size, weakening the validity of using just the p-value. However, based on the percentage change in means (`r round(mpa_pct, 1)`%), there is still sufficient evidence of a significant change in means at MPA sites from 2012 to 2018. 
+
+
+**iv.** Mean lobster sizes (mm) at non-MPA sites in 2012 (`r round(mean_nMPA_2012, 2)` $\pm$ `r round(sd_nMPA_2012, 2)`, n = `r n_nMPA_2012`) **did not** differ significantly from non-MPA sites in 2018 (`r round(mean_nMPA_2018, 2)` $\pm$ `r round(sd_nMPA_2018, 2)`, n = `r n_nMPA_2018`) by a paired two-sample t-test (t(`r round(non_12_vs_18$parameter, 2)`) = `r round(non_12_vs_18$statistic, 2)`, *p* < 0.005). The Cohen's d calculation (d = `r round(d_non_12_vs_18$estimate, 2)`, *d* < 0.2) shows a small effect size, so our p-value is most likely accurate.
+
 
 # Summary:
 
